@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>title</title>
+</head>
+<body>
+    
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Tes CPNS - 110 Soal SKD (Set 2)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- jsPDF Library for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .nav-grid-btn {
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-grid-btn.answered { background-color: #22c55e; color: white; border-color: #22c55e; }
+        .nav-grid-btn.unanswered { background-color: #ef4444; color: white; border-color: #ef4444; }
+        .nav-grid-btn.current { background-color: #3b82f6; color: white; border-color: #3b82f6; transform: scale(1.1); }
+        .option-label {
+            transition: all 0.2s ease-in-out;
+            border: 2px solid #e2e8f0;
+        }
+        .option-label.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .option-label:hover {
+            border-color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-orange-500">Simulasi Tes CPNS</h1>
+            <p class="text-gray-500">Computer Assisted Test - Sistem Seleksi CPNS</p>
+        </header>
+
+        <!-- Info Bar -->
+        <div class="bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-100 text-blue-600 p-3 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                    <div id="timer" class="text-2xl font-bold text-blue-600">100:00</div>
+                    <div class="text-xs text-gray-500">Waktu Tersisa</div>
+                </div>
+            </div>
+
+            <div class="flex-grow md:flex-grow-0 flex items-center space-x-6 text-center">
+                <div class="text-center">
+                    <div id="total-soal" class="text-2xl font-bold">110</div>
+                    <div class="text-xs text-gray-500">Total Soal</div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-green-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg></span>
+                    <div class="text-left">
+                        <div id="dijawab-count" class="text-2xl font-bold">0</div>
+                        <div class="text-xs text-green-500 font-semibold">Dijawab</div>
+                    </div>
+                </div>
+                 <div class="flex items-center space-x-2">
+                    <span class="text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></span>
+                    <div class="text-left">
+                        <div id="belum-dijawab-count" class="text-2xl font-bold">110</div>
+                        <div class="text-xs text-red-500 font-semibold">Belum Dijawab</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-auto md:flex-grow-0">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-semibold text-gray-600">Progress Pengerjaan</span>
+                    <span id="progress-percent" class="text-xs font-semibold text-blue-600">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="flex space-x-2">
+                <button id="finish-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg transition duration-300">Selesai</button>
+                <button id="restart-btn-top" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-5 rounded-lg transition duration-300">Ulang</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Question Panel -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6 flex flex-col">
+                <div class="flex-grow">
+                    <h2 id="question-header" class="text-lg font-semibold text-gray-800 mb-4">Soal No. 1</h2>
+                    <p id="question-text" class="text-gray-700 leading-relaxed mb-6">Memuat soal...</p>
+                    <div id="question-image-container" class="my-4 flex justify-center"></div>
+                    <div id="options-container" class="space-y-3">
+                        <!-- Options injected by JS -->
+                    </div>
+                </div>
+                <div class="border-t mt-6 pt-4 flex justify-end space-x-4">
+                    <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition duration-300">
+                        Simpan dan Lanjutkan
+                    </button>
+                    <button id="skip-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-8 rounded-lg transition duration-300">
+                        Lewatkan Soal Ini
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Panel -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold border-b pb-2 mb-4">Navigasi Soal</h3>
+                <div class="flex justify-around text-xs mb-4">
+                    <div class="flex items-center"><div class="w-3 h-3 rounded-sm bg-green-500 mr-1.5"></div>Dijawab</div>
+                    <div class="flex items-center"><div class="w-3 h-3 rounded-sm bg-red-500 mr-1.5"></div>Belum</div>
+                    <div class="flex items-center"><div class="w-3 h-3 rounded-sm bg-blue-500 mr-1.5"></div>Aktif</div>
+                </div>
+                <div id="nav-grid" class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-10 gap-1.5">
+                    <!-- Nav grid injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Modal -->
+    <div id="score-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-xl shadow-xl p-8 text-center max-w-lg w-full">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Hasil Ujian SKD</h2>
+            <p id="overall-status" class="text-lg font-bold mb-4 text-gray-600">Memuat status...</p>
+            
+            <div class="grid grid-cols-2 gap-4 text-left my-6">
+                <div class="col-span-2 text-center border-b pb-2">
+                    <p class="text-lg text-gray-600">Total Skor Anda:</p>
+                    <p id="total-score-text" class="text-6xl font-bold text-blue-600">0</p>
+                </div>
+                <!-- TWK -->
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="font-bold">TWK</p>
+                    <p class="text-2xl" id="twk-score">0</p>
+                    <p class="text-xs">Ambang Batas: 65</p>
+                    <p class="text-sm font-semibold" id="twk-status"></p>
+                </div>
+                <!-- TIU -->
+                 <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="font-bold">TIU</p>
+                    <p class="text-2xl" id="tiu-score">0</p>
+                    <p class="text-xs">Ambang Batas: 80</p>
+                    <p class="text-sm font-semibold" id="tiu-status"></p>
+                </div>
+                <!-- TKP -->
+                 <div class="col-span-2 bg-gray-50 p-3 rounded-lg">
+                    <p class="font-bold">TKP</p>
+                    <p class="text-2xl" id="tkp-score">0</p>
+                    <p class="text-xs">Ambang Batas: 166</p>
+                    <p class="text-sm font-semibold" id="tkp-status"></p>
+                </div>
+            </div>
+
+            <div class="flex space-x-4 mt-8">
+                <button id="download-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                    Download Pembahasan
+                </button>
+                <button id="restart-btn-modal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                    Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const { jsPDF } = window.jspdf;
+
+        // --- BANK SOAL BARU (110 SOAL) - SET 2 ---
+        const quizData = [
+            // TWK (30 Soal)
+            { category: 'TWK', question: "Pada tanggal 1 Maret 1945, diumumkan pembentukan Badan Penyelidik Usaha-usaha Persiapan Kemerdekaan Indonesia (BPUPKI) yang diketuai oleh...", options: ["Ir. Soekarno", "Drs. Mohammad Hatta", "Dr. K.R.T. Radjiman Wedyodiningrat", "Mr. Soepomo"], answer: "Dr. K.R.T. Radjiman Wedyodiningrat", pembahasan: "BPUPKI (Dokuritsu Junbi Cosakai) diketuai oleh Dr. K.R.T. Radjiman Wedyodiningrat, dengan wakil ketua Ichibangase Yosio (Jepang) dan R.P. Soeroso." },
+            { category: 'TWK', question: "Makna yang terkandung dalam lambang rantai pada sila kedua Pancasila adalah...", options: ["Persatuan yang kokoh", "Hubungan antarmanusia yang tidak terputus", "Kedaulatan di tangan rakyat", "Keseimbangan antara hak dan kewajiban"], answer: "Hubungan antarmanusia yang tidak terputus", pembahasan: "Rantai dengan mata rantai bulat dan persegi melambangkan hubungan timbal balik antarumat manusia, baik laki-laki maupun perempuan, yang perlu bersatu dan saling membantu." },
+            { category: 'TWK', question: "Asas dalam otonomi daerah yang berarti penyerahan wewenang pemerintahan oleh Pemerintah Pusat kepada daerah otonom untuk mengatur dan mengurus urusan pemerintahan dalam sistem NKRI adalah...", options: ["Desentralisasi", "Dekonsentrasi", "Tugas Pembantuan", "Sentralisasi"], answer: "Desentralisasi", pembahasan: "Desentralisasi adalah penyerahan wewenang dari pemerintah pusat kepada pemerintah daerah untuk mengurus urusan rumah tangganya sendiri." },
+            { category: 'TWK', question: "Perlawanan rakyat Maluku terhadap VOC yang terkenal dipimpin oleh Thomas Matulessy yang bergelar...", options: ["Sultan Hasanuddin", "Pangeran Diponegoro", "Kapitan Pattimura", "Tuanku Imam Bonjol"], answer: "Kapitan Pattimura", pembahasan: "Perlawanan rakyat Maluku pada tahun 1817 dipimpin oleh Thomas Matulessy yang dikenal dengan gelar Kapitan Pattimura." },
+            { category: 'TWK', question: "Salah satu isi dari Dekrit Presiden 5 Juli 1959 adalah...", options: ["Pembubaran PKI", "Pembentukan MPRS dan DPAS", "Kembali ke UUD 1945 dan tidak berlakunya UUDS 1950", "Pernyataan keluar dari PBB"], answer: "Kembali ke UUD 1945 dan tidak berlakunya UUDS 1950", pembahasan: "Isi Dekrit Presiden 5 Juli 1959 adalah: 1) Pembubaran Konstituante, 2) Berlakunya kembali UUD 1945 dan tidak berlakunya UUDS 1950, 3) Pembentukan MPRS dan DPAS." },
+            { category: 'TWK', question: "Paham yang menganggap suku dan ras sendiri lebih unggul dibandingkan suku dan ras lain disebut...", options: ["Nasionalisme", "Patriotisme", "Chauvinisme", "Primordialisme"], answer: "Chauvinisme", pembahasan: "Chauvinisme adalah bentuk nasionalisme yang sempit atau berlebihan yang mengagung-agungkan bangsa sendiri dan merendahkan bangsa lain." },
+            { category: 'TWK', question: "Lagu kebangsaan Indonesia Raya pertama kali diperdengarkan secara instrumental pada saat peristiwa...", options: ["Proklamasi Kemerdekaan", "Sumpah Pemuda", "Sidang BPUPKI", "Rengasdengklok"], answer: "Sumpah Pemuda", pembahasan: "Lagu Indonesia Raya ciptaan W.R. Supratman diperdengarkan untuk pertama kalinya dengan biola pada Kongres Pemuda II tanggal 28 Oktober 1928." },
+            { category: 'TWK', question: "Mahkamah Konstitusi (MK) memiliki wewenang untuk mengadili pada tingkat pertama dan terakhir yang putusannya bersifat final, salah satunya adalah...", options: ["Menguji undang-undang terhadap UUD", "Mengawasi jalannya pemerintahan", "Memberikan grasi dan rehabilitasi", "Mengangkat duta dan konsul"], answer: "Menguji undang-undang terhadap UUD", pembahasan: "Salah satu wewenang utama MK adalah melakukan judicial review, yaitu menguji apakah suatu undang-undang bertentangan dengan UUD NRI Tahun 1945." },
+            { category: 'TWK', question: "Peristiwa Rengasdengklok terjadi karena adanya perbedaan pendapat antara golongan tua dan golongan muda mengenai...", options: ["Dasar negara Indonesia", "Bentuk negara Indonesia", "Waktu pelaksanaan proklamasi kemerdekaan", "Pemimpin pertama Indonesia"], answer: "Waktu pelaksanaan proklamasi kemerdekaan", pembahasan: "Golongan muda ingin proklamasi segera dilaksanakan setelah Jepang menyerah, sementara golongan tua ingin melaksanakannya melalui PPKI untuk menghindari pertumpahan darah." },
+            { category: 'TWK', question: "Sikap positif terhadap nilai-nilai Pancasila dalam kehidupan berbangsa dan bernegara dapat diwujudkan dengan...", options: ["Menghafal semua isi Pancasila", "Mempelajari sejarah perumusan Pancasila", "Mengutamakan persatuan dan kesatuan di atas kepentingan pribadi dan golongan", "Memasang lambang Garuda Pancasila di setiap rumah"], answer: "Mengutamakan persatuan dan kesatuan di atas kepentingan pribadi dan golongan", pembahasan: "Mengutamakan persatuan adalah wujud nyata pengamalan sila ketiga Pancasila, yang merupakan sikap positif dalam kehidupan berbangsa." },
+            { category: 'TWK', question: "Tanam Paksa (Cultuurstelsel) yang diterapkan pemerintah kolonial Belanda pada abad ke-19 dicetuskan oleh...", options: ["Herman Willem Daendels", "Thomas Stamford Raffles", "Johannes van den Bosch", "J.P. Coen"], answer: "Johannes van den Bosch", pembahasan: "Sistem Tanam Paksa diusulkan oleh Gubernur Jenderal Johannes van den Bosch pada tahun 1830 untuk mengisi kas Belanda yang kosong." },
+            { category: 'TWK', question: "Dalam UUD 1945, pasal yang menjamin hak setiap warga negara untuk mendapatkan pendidikan adalah...", options: ["Pasal 28E", "Pasal 29", "Pasal 30", "Pasal 31"], answer: "Pasal 31", pembahasan: "Pasal 31 ayat (1) UUD 1945 menyatakan bahwa 'Setiap warga negara berhak mendapat pendidikan'." },
+            { category: 'TWK', question: "Konferensi Asia-Afrika (KAA) yang diselenggarakan pada tahun 1955 di Bandung menghasilkan sebuah prinsip yang dikenal sebagai...", options: ["Dasasila Bandung", "Piagam Jakarta", "Tritura", "Deklarasi Djuanda"], answer: "Dasasila Bandung", pembahasan: "KAA 1955 menghasilkan 'Dasasila Bandung', yang berisi sepuluh poin prinsip untuk mempromosikan kerja sama ekonomi dan kebudayaan Asia-Afrika serta melawan kolonialisme." },
+            { category: 'TWK', question: "Pemberontakan DI/TII di Jawa Barat dipimpin oleh...", options: ["Amir Fatah", "Kahar Muzakkar", "Daud Beureueh", "Sekarmadji Maridjan Kartosoewirjo"], answer: "Sekarmadji Maridjan Kartosoewirjo", pembahasan: "Pemberontakan Darul Islam/Tentara Islam Indonesia (DI/TII) di Jawa Barat diproklamasikan dan dipimpin oleh S.M. Kartosoewirjo." },
+            { category: 'TWK', question: "Wawasan Nusantara memandang Indonesia sebagai satu kesatuan...", options: ["Politik dan Ekonomi", "Sosial dan Budaya", "Pertahanan dan Keamanan", "Semua jawaban benar"], answer: "Semua jawaban benar", pembahasan: "Wawasan Nusantara adalah cara pandang bangsa Indonesia yang memandang wilayahnya sebagai satu kesatuan yang utuh dalam aspek politik, ekonomi, sosial, budaya, dan pertahanan keamanan (Poleksosbudhankam)." },
+            { category: 'TWK', question: "Amandemen UUD 1945 dilakukan oleh...", options: ["Presiden", "Majelis Permusyawaratan Rakyat (MPR)", "Dewan Perwakilan Rakyat (DPR)", "Mahkamah Konstitusi (MK)"], answer: "Majelis Permusyawaratan Rakyat (MPR)", pembahasan: "Sesuai dengan Pasal 37 UUD 1945, wewenang untuk mengubah dan menetapkan Undang-Undang Dasar ada pada Majelis Permusyawaratan Rakyat." },
+            { category: 'TWK', question: "Pahlawan wanita dari Aceh yang memimpin perang gerilya setelah suaminya, Teuku Umar, gugur adalah...", options: ["Cut Nyak Dien", "Cut Nyak Meutia", "Rasuna Said", "Martha Christina Tiahahu"], answer: "Cut Nyak Dien", pembahasan: "Setelah Teuku Umar gugur, Cut Nyak Dien melanjutkan perjuangan dengan memimpin perang gerilya melawan Belanda di pedalaman Meulaboh." },
+            { category: 'TWK', question: "Bhinneka Tunggal Ika yang menjadi semboyan negara Indonesia diambil dari kitab...", options: ["Negarakertagama", "Sutasoma", "Pararaton", "Arjunawiwaha"], answer: "Sutasoma", pembahasan: "Semboyan Bhinneka Tunggal Ika diambil dari Kitab Sutasoma karangan Mpu Tantular pada masa Kerajaan Majapahit." },
+            { category: 'TWK', question: "Contoh implementasi nilai kerakyatan dalam kehidupan sehari-hari adalah...", options: ["Rajin beribadah sesuai keyakinan", "Membeli produk dalam negeri", "Menyelesaikan masalah melalui musyawarah untuk mufakat", "Membantu korban bencana alam"], answer: "Menyelesaikan masalah melalui musyawarah untuk mufakat", pembahasan: "Musyawarah untuk mufakat adalah ciri khas demokrasi Pancasila dan merupakan implementasi langsung dari sila keempat, 'Kerakyatan yang Dipimpin oleh Hikmat Kebijaksanaan dalam Permusyawaratan/Perwakilan'." },
+            { category: 'TWK', question: "Badan usaha yang seluruh atau sebagian besar modalnya dimiliki oleh negara melalui penyertaan secara langsung yang berasal dari kekayaan negara yang dipisahkan disebut...", options: ["Koperasi", "Perusahaan Swasta", "Badan Usaha Milik Negara (BUMN)", "Yayasan"], answer: "Badan Usaha Milik Negara (BUMN)", pembahasan: "Definisi tersebut sesuai dengan pengertian BUMN menurut Undang-Undang No. 19 Tahun 2003." },
+            { category: 'TWK', question: "Pokok pikiran pertama dalam Pembukaan UUD 1945, yaitu 'Negara melindungi segenap bangsa Indonesia dan seluruh tumpah darah Indonesia dengan berdasar atas persatuan', merupakan penjabaran dari sila...", options: ["Pertama", "Kedua", "Ketiga", "Keempat"], answer: "Ketiga", pembahasan: "Pokok pikiran pertama ini secara jelas menjabarkan esensi dari Sila Ketiga, yaitu Persatuan Indonesia." },
+            { category: 'TWK', question: "Perjanjian Linggarjati antara Indonesia dan Belanda menghasilkan kesepakatan bahwa Belanda mengakui secara de facto wilayah RI yang meliputi...", options: ["Jawa, Sumatera, dan Madura", "Seluruh wilayah Hindia Belanda", "Jawa dan Sumatera", "Hanya Yogyakarta"], answer: "Jawa, Sumatera, dan Madura", pembahasan: "Salah satu poin utama Perjanjian Linggarjati adalah pengakuan de facto Belanda atas kekuasaan Republik Indonesia atas wilayah Jawa, Sumatera, dan Madura." },
+            { category: 'TWK', question: "Sistem pemerintahan di mana kepala negara dan kepala pemerintahan dipegang oleh presiden disebut sistem...", options: ["Parlementer", "Presidensial", "Monarki Absolut", "Republik Konstitusional"], answer: "Presidensial", pembahasan: "Dalam sistem presidensial, presiden memiliki kedudukan sebagai kepala negara sekaligus kepala pemerintahan, dan tidak bertanggung jawab kepada parlemen." },
+            { category: 'TWK', question: "Gerakan Non-Blok (GNB) didirikan sebagai respons terhadap...", options: ["Perang Dunia I", "Perang Dingin antara Blok Barat dan Blok Timur", "Krisis Ekonomi Global", "Ancaman terorisme"], answer: "Perang Dingin antara Blok Barat dan Blok Timur", pembahasan: "GNB didirikan oleh negara-negara yang tidak ingin memihak Blok Barat (pimpinan AS) maupun Blok Timur (pimpinan Uni Soviet) selama era Perang Dingin." },
+            { category: 'TWK', question: "Contoh sikap patriotisme di era modern adalah...", options: ["Mengikuti upacara bendera dengan khidmat", "Mengharumkan nama bangsa melalui prestasi di kancah internasional", "Membayar pajak tepat waktu", "Semua jawaban benar"], answer: "Semua jawaban benar", pembahasan: "Patriotisme (semangat cinta tanah air) dapat diwujudkan dalam berbagai bentuk, termasuk tindakan seremonial, prestasi, dan pemenuhan kewajiban sebagai warga negara." },
+            { category: 'TWK', question: "Lembaga negara yang berwenang mengusulkan pengangkatan hakim agung adalah...", options: ["Komisi Yudisial (KY)", "Mahkamah Agung (MA)", "Presiden", "DPR"], answer: "Komisi Yudisial (KY)", pembahasan: "Sesuai UUD 1945, Komisi Yudisial (KY) berwenang mengusulkan pengangkatan hakim agung kepada DPR untuk mendapatkan persetujuan." },
+            { category: 'TWK', question: "Tokoh yang mengetik naskah proklamasi kemerdekaan Indonesia adalah...", options: ["B.M. Diah", "Latief Hendraningrat", "Sayuti Melik", "Soekarni"], answer: "Sayuti Melik", pembahasan: "Naskah proklamasi yang awalnya merupakan tulisan tangan Soekarno, kemudian diketik oleh Sayuti Melik dengan beberapa perubahan." },
+            { category: 'TWK', question: "Tujuan nasional bangsa Indonesia yang tercantum dalam Pembukaan UUD 1945 alinea keempat adalah, kecuali...", options: ["Melindungi segenap bangsa Indonesia", "Memajukan kesejahteraan umum", "Mencerdaskan kehidupan bangsa", "Menguasai perekonomian dunia"], answer: "Menguasai perekonomian dunia", pembahasan: "Tujuan nasional Indonesia adalah melindungi segenap bangsa, memajukan kesejahteraan umum, mencerdaskan kehidupan bangsa, dan ikut melaksanakan ketertiban dunia." },
+            { category: 'TWK', question: "Hari Kesaktian Pancasila diperingati setiap tanggal...", options: ["1 Juni", "22 Juni", "17 Agustus", "1 Oktober"], answer: "1 Oktober", pembahasan: "Hari Kesaktian Pancasila diperingati setiap 1 Oktober untuk mengenang keberhasilan bangsa Indonesia dalam menumpas pemberontakan G30S/PKI." },
+            { category: 'TWK', question: "Integritas seorang ASN tercermin dari perilakunya yang...", options: ["Selalu mengikuti perintah atasan tanpa bertanya", "Bekerja keras saat ada pengawasan", "Konsisten antara perkataan dan perbuatan sesuai dengan nilai dan aturan yang berlaku", "Pandai menjaga hubungan baik dengan semua orang"], answer: "Konsisten antara perkataan dan perbuatan sesuai dengan nilai dan aturan yang berlaku", pembahasan: "Integritas adalah kesesuaian atau konsistensi antara nilai-nilai yang dianut, perkataan, dan perbuatan. Ini adalah pilar utama seorang ASN." },
+            
+            // TIU (35 Soal)
+            { category: 'TIU', question: "Sinonim dari kata BONAFIDE adalah...", options: ["Terpercaya", "Bangkrut", "Curang", "Berpengalaman"], answer: "Terpercaya", pembahasan: "Bonafide berarti dapat dipercaya dengan baik (tentang perusahaan dan sebagainya); jujur." },
+            { category: 'TIU', question: "Antonim dari kata VIRTUAL adalah...", options: ["Maya", "Nyata", "Impian", "Siber"], answer: "Nyata", pembahasan: "Virtual berarti tampil atau hadir dengan menggunakan perangkat lunak komputer, misalnya di internet (maya). Lawan katanya adalah nyata atau aktual." },
+            { category: 'TIU', question: "GURU : MURID = ... : ...", options: ["DOKTER : PASIEN", "PILOT : PRAMUGARI", "NELAYAN : PERAHU", "PETANI : SAWAH"], answer: "DOKTER : PASIEN", pembahasan: "Hubungannya adalah 'profesi dan pihak yang dilayani'. Guru melayani/mengajar murid, sebagaimana dokter melayani/mengobati pasien." },
+            { category: 'TIU', question: "Seri angka: 100, 95, 85, 70, 50, ...", options: ["25", "30", "35", "40"], answer: "25", pembahasan: "Pola pengurangannya adalah bilangan kelipatan 5: -5, -10, -15, -20, maka selanjutnya adalah -25. 50 - 25 = 25." },
+            { category: 'TIU', question: "Seri huruf: Z, Y, W, T, P, ...", options: ["K", "L", "M", "N"], answer: "K", pembahasan: "Pola loncatannya mundur: Z(-1)Y, Y(-2)W, W(-3)T, T(-4)P, maka selanjutnya P(-5)K." },
+            { category: 'TIU', question: "Jika 3a + 5 = 20, maka nilai dari 6a adalah...", options: ["25", "30", "35", "40"], answer: "30", pembahasan: "3a = 20 - 5 -> 3a = 15 -> a = 5. Maka, 6a = 6 * 5 = 30." },
+            { category: 'TIU', question: "Semua bunga di taman mawar berwarna merah. Sinta memetik bunga di taman mawar. Maka...", options: ["Bunga yang dipetik Sinta berwarna merah", "Bunga yang dipetik Sinta bukan mawar", "Tidak semua bunga di taman berwarna merah", "Tidak dapat disimpulkan"], answer: "Bunga yang dipetik Sinta berwarna merah", pembahasan: "Ini adalah penerapan silogisme. Jika semua anggota kelompok X (bunga di taman mawar) memiliki sifat Y (berwarna merah), dan S adalah anggota X, maka S pasti memiliki sifat Y." },
+            { category: 'TIU', question: "Harga 5 kg jeruk adalah Rp 75.000. Berapa harga untuk 8 kg jeruk?", options: ["Rp 100.000", "Rp 110.000", "Rp 120.000", "Rp 130.000"], answer: "Rp 120.000", pembahasan: "Harga per kg = 75.000 / 5 = Rp 15.000. Harga 8 kg = 8 * 15.000 = Rp 120.000." },
+            { category: 'TIU', question: "Sebuah mobil menempuh jarak 120 km dalam waktu 2,5 jam. Kecepatan rata-rata mobil tersebut adalah...", options: ["45 km/jam", "48 km/jam", "50 km/jam", "52 km/jam"], answer: "48 km/jam", pembahasan: "Kecepatan = Jarak / Waktu = 120 km / 2,5 jam = 48 km/jam." },
+            { category: 'TIU', question: "Manakah yang tidak termasuk dalam kelompoknya?", options: ["Biola", "Gitar", "Piano", "Seruling"], answer: "Seruling", pembahasan: "Biola, gitar, dan piano adalah alat musik dawai (dipetik/digesek/ditekan), sedangkan seruling adalah alat musik tiup." },
+            { category: 'TIU', question: "Jika hari ini adalah hari Rabu, maka 60 hari kemudian adalah hari...", options: ["Sabtu", "Minggu", "Senin", "Selasa"], answer: "Minggu", pembahasan: "60 hari dibagi 7 hari = 8 sisa 4. Maka 4 hari setelah Rabu adalah hari Minggu." },
+            { category: 'TIU', question: "Berapakah 15% dari 400?", options: ["40", "50", "60", "70"], answer: "60", pembahasan: "15% * 400 = (15/100) * 400 = 15 * 4 = 60." },
+            { category: 'TIU', question: "PANAS : DINGIN = DATANG : ...", options: ["PERGI", "MASUK", "PULANG", "TIBA"], answer: "PERGI", pembahasan: "Hubungannya adalah antonim atau lawan kata. Lawan kata panas adalah dingin, lawan kata datang adalah pergi." },
+            { category: 'TIU', question: "Luas sebuah lingkaran adalah 154 cm². Berapakah jari-jarinya? (π = 22/7)", options: ["6 cm", "7 cm", "8 cm", "14 cm"], answer: "7 cm", pembahasan: "Luas = π * r² -> 154 = (22/7) * r² -> r² = 154 * (7/22) -> r² = 7 * 7 -> r² = 49 -> r = 7 cm." },
+            { category: 'TIU', question: "Jika Rina rajin belajar, maka ia lulus ujian. Rina tidak lulus ujian. Maka...", options: ["Rina rajin belajar", "Rina tidak rajin belajar", "Rina rajin belajar tetapi tidak lulus", "Tidak dapat disimpulkan"], answer: "Rina tidak rajin belajar", pembahasan: "Ini adalah modus tollens. Jika P maka Q. Tidak Q, maka kesimpulannya adalah tidak P. Jadi, Rina tidak rajin belajar." },
+            { category: 'TIU', question: "Seri angka: 1, 1, 2, 3, 5, 8, ...", options: ["11", "12", "13", "14"], answer: "13", pembahasan: "Ini adalah deret Fibonacci, di mana setiap angka adalah jumlah dari dua angka sebelumnya. 5 + 8 = 13." },
+            { category: 'TIU', question: "Sebuah baju didiskon 20% menjadi Rp 120.000. Berapa harga asli baju tersebut?", options: ["Rp 140.000", "Rp 144.000", "Rp 150.000", "Rp 160.000"], answer: "Rp 150.000", pembahasan: "Harga setelah diskon adalah 80% dari harga asli. Harga Asli = Harga Diskon / 80% = 120.000 / 0.8 = Rp 150.000." },
+            { category: 'TIU', question: "Antonim dari kata PROMINEN adalah...", options: ["Terkenal", "Menonjol", "Biasa", "Unggul"], answer: "Biasa", pembahasan: "Prominen berarti terkemuka atau menonjol. Lawan katanya adalah biasa atau tidak menonjol." },
+            { category: 'TIU', question: "Sinonim dari kata KREDIBILITAS adalah...", options: ["Kepercayaan", "Kemampuan", "Kejujuran", "Keterandalan"], answer: "Keterandalan", pembahasan: "Kredibilitas adalah perihal dapat dipercaya; keterandalan. Ini mencakup aspek kepercayaan, kejujuran, dan kemampuan." },
+            { category: 'TIU', question: "PESAWAT : AVTUR = MOBIL : ...", options: ["SOLAR", "BENSIN", "OLI", "MESIN"], answer: "BENSIN", pembahasan: "Hubungannya adalah 'alat transportasi : bahan bakar utama'. Bahan bakar utama pesawat adalah avtur, bahan bakar utama mobil (pada umumnya) adalah bensin." },
+            { category: 'TIU', question: "Ayah Budi memiliki 5 anak: Nana, Nini, Nunu, Nene. Siapakah nama anak kelima?", options: ["Nono", "Budi", "Ayah", "Tidak ada nama"], answer: "Budi", pembahasan: "Soal ini adalah jebakan logika. Kalimat pertama adalah 'Ayah Budi memiliki 5 anak', yang berarti Budi adalah salah satu dari kelima anak tersebut." },
+            { category: 'TIU', question: "Seri angka: 81, 27, 9, 3, ...", options: ["1", "1/3", "0", "-1"], answer: "1", pembahasan: "Ini adalah deret geometri di mana setiap angka dibagi 3. 3 / 3 = 1." },
+            { category: 'TIU', question: "Semua mahasiswa memakai baju putih. Sebagian yang memakai baju putih membawa buku. Maka...", options: ["Semua mahasiswa membawa buku", "Sebagian mahasiswa membawa buku", "Sebagian mahasiswa tidak membawa buku", "Tidak dapat ditarik kesimpulan"], answer: "Tidak dapat ditarik kesimpulan", pembahasan: "Tidak ada kesimpulan pasti yang bisa ditarik. Bisa jadi sebagian mahasiswa yang membawa buku itu adalah mahasiswa, bisa jadi bukan. Informasi tidak cukup." },
+            { category: 'TIU', question: "Berapakah nilai dari 25² - 24²?", options: ["1", "49", "50", "625"], answer: "49", pembahasan: "Menggunakan rumus selisih kuadrat a² - b² = (a+b)(a-b). Maka, (25+24)(25-24) = (49)(1) = 49." },
+            { category: 'TIU', question: "AIR : HAUS = ... : ...", options: ["UDARA : PANAS", "API : DINGIN", "MAKANAN : LAPAR", "LAMPU : GELAP"], answer: "MAKANAN : LAPAR", pembahasan: "Hubungannya adalah 'sesuatu yang dibutuhkan untuk mengatasi kondisi'. Air dibutuhkan untuk mengatasi haus, makanan dibutuhkan untuk mengatasi lapar." },
+            { category: 'TIU', question: "Umur ayah 3 kali umur anaknya. Jika selisih umur mereka 30 tahun, berapa umur sang anak?", options: ["10 tahun", "15 tahun", "20 tahun", "25 tahun"], answer: "15 tahun", pembahasan: "Misal umur ayah = A, umur anak = B. A = 3B. A - B = 30. Substitusi: 3B - B = 30 -> 2B = 30 -> B = 15 tahun." },
+            { category: 'TIU', question: "Jika x = 1/16 dan y = 16%, maka...", options: ["x > y", "x < y", "x = y", "Hubungan tidak dapat ditentukan"], answer: "x < y", pembahasan: "x = 1/16 = 0.0625. y = 16% = 0.16. Jadi, x < y." },
+            { category: 'TIU', question: "Seri huruf: A, Z, B, Y, C, ...", options: ["X", "D", "W", "E"], answer: "X", pembahasan: "Terdapat dua seri yang berjalan berselingan. Seri pertama maju (A, B, C, ...) dan seri kedua mundur (Z, Y, X, ...). Maka setelah C adalah X." },
+            { category: 'TIU', question: "Sebuah dadu dilempar sekali. Peluang munculnya mata dadu bilangan prima adalah...", options: ["1/6", "1/3", "1/2", "2/3"], answer: "1/2", pembahasan: "Mata dadu adalah {1, 2, 3, 4, 5, 6}. Bilangan prima di antaranya adalah {2, 3, 5} (ada 3). Total kemungkinan ada 6. Peluang = 3/6 = 1/2." },
+            { category: 'TIU', question: "Antonim dari kata KOHEREN adalah...", options: ["Berhubungan", "Kacau", "Selaras", "Rapi"], answer: "Kacau", pembahasan: "Koheren berarti berhubungan, bersangkut-paut, atau selaras. Lawan katanya adalah tidak teratur atau kacau." },
+            { category: 'TIU', question: "Sinonim dari kata INSINUASI adalah...", options: ["Tuduhan", "Sindiran", "Perintah", "Pujian"], answer: "Sindiran", pembahasan: "Insinuasi adalah tuduhan tersembunyi, tidak langsung, atau sindiran." },
+            { category: 'TIU', question: "INDONESIA : JAKARTA = MALAYSIA : ...", options: ["BANGKOK", "MANILA", "SINGAPURA", "KUALA LUMPUR"], answer: "KUALA LUMPUR", pembahasan: "Hubungannya adalah 'negara : ibukota'. Ibukota Indonesia adalah Jakarta, ibukota Malaysia adalah Kuala Lumpur." },
+            { category: 'TIU', question: "Jika p adalah bilangan habis dibagi 4 dan nilainya lebih besar dari 13 dan lebih kecil dari 17, sedangkan q = 15, maka...", options: ["p > q", "p < q", "p = q", "p + 1 = q"], answer: "p > q", pembahasan: "Bilangan yang habis dibagi 4 antara 13 dan 17 adalah 16. Jadi p = 16. Karena p=16 dan q=15, maka p > q." },
+            { category: 'TIU', question: "Kata yang tidak sekelompok adalah...", options: ["Merah", "Kuning", "Hijau", "Cerah"], answer: "Cerah", pembahasan: "Merah, kuning, dan hijau adalah nama warna spesifik, sedangkan cerah adalah sifat atau kualitas dari warna." },
+            { category: 'TIU', question: "Seri angka: 1, 4, 27, 256, ...", options: ["1024", "3125", "512", "729"], answer: "3125", pembahasan: "Pola deret ini adalah n^n (n pangkat n), dimulai dari n=1. 1¹=1, 2²=4, 3³=27, 4⁴=256, maka selanjutnya adalah 5⁵ = 3125." },
+
+            // TKP (45 Soal)
+            { category: 'TKP', question: "Anda ditugaskan dalam sebuah tim proyek yang terdiri dari orang-orang dengan kompetensi yang beragam. Di tengah jalan, terjadi perdebatan sengit karena perbedaan pendekatan teknis. Apa yang akan Anda lakukan?", 
+                options: [
+                    {text: "Menjadi penengah, memfasilitasi diskusi agar setiap pihak dapat menjelaskan dasar pemikirannya, dan mencari titik temu yang paling menguntungkan bagi proyek.", score: 5},
+                    {text: "Mendukung argumen yang paling sesuai dengan kompetensi saya.", score: 4},
+                    {text: "Melaporkan kebuntuan ini kepada atasan dan meminta keputusannya.", score: 3},
+                    {text: "Membiarkan perdebatan berlangsung sampai ada yang mengalah.", score: 2},
+                    {text: "Menarik diri dari perdebatan karena merasa bukan tanggung jawab saya untuk menyelesaikannya.", score: 1},
+                ], 
+                answer: "Menjadi penengah, memfasilitasi diskusi agar setiap pihak dapat menjelaskan dasar pemikirannya, dan mencari titik temu yang paling menguntungkan bagi proyek.", 
+                pembahasan: "Menunjukkan kemampuan kolaborasi, komunikasi, dan pemecahan masalah yang berorientasi pada tujuan bersama (Skor 5)." 
+            },
+            { category: 'TKP', question: "Saat sedang melayani antrean, seorang ibu menyerobot dan meminta didahulukan dengan alasan terburu-buru. Padahal, banyak lansia yang sudah mengantre dengan tertib. Sikap Anda...", 
+                options: [
+                    {text: "Dengan sopan menjelaskan aturan antrean dan mempersilakan ibu tersebut untuk mengambil nomor antrean, sambil memberi pengertian tentang prioritas bagi lansia.", score: 5},
+                    {text: "Menegurnya dengan keras agar kembali ke barisan.", score: 4},
+                    {text: "Melayaninya dengan cepat agar tidak menimbulkan keributan.", score: 3},
+                    {text: "Mengabaikannya dan tetap melayani sesuai nomor urut.", score: 2},
+                    {text: "Menyuruh petugas keamanan untuk menanganinya.", score: 1},
+                ], 
+                answer: "Dengan sopan menjelaskan aturan antrean dan mempersilakan ibu tersebut untuk mengambil nomor antrean, sambil memberi pengertian tentang prioritas bagi lansia.", 
+                pembahasan: "Menunjukkan orientasi pelayanan yang prima, kemampuan menegakkan aturan dengan tetap menjaga kesopanan, dan empati (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda menyadari bahwa sistem pelaporan kerja yang digunakan saat ini tidak efisien dan membuang banyak waktu. Apa tindakan Anda?", 
+                options: [
+                    {text: "Merancang usulan sistem pelaporan yang lebih efisien, lengkap dengan contoh dan perkiraan manfaatnya, lalu mengajukannya kepada atasan.", score: 5},
+                    {text: "Mengeluhkan sistem yang tidak efisien ini kepada rekan-rekan kerja.", score: 4},
+                    {text: "Tetap menggunakan sistem yang ada karena itu sudah menjadi aturan.", score: 3},
+                    {text: "Mencoba membuat sistem sendiri untuk penggunaan pribadi.", score: 2},
+                    {text: "Bekerja lebih lambat sebagai bentuk protes terhadap sistem.", score: 1},
+                ], 
+                answer: "Merancang usulan sistem pelaporan yang lebih efisien, lengkap dengan contoh dan perkiraan manfaatnya, lalu mengajukannya kepada atasan.", 
+                pembahasan: "Menunjukkan inisiatif, kreativitas, dan orientasi pada perbaikan yang berkelanjutan (continuous improvement) (Skor 5)." 
+            },
+            { category: 'TKP', question: "Seorang rekan kerja yang berbeda keyakinan dengan Anda mengajak untuk makan siang bersama, namun ia memilih tempat makan yang tidak menyajikan makanan halal. Anda akan...", 
+                options: [
+                    {text: "Menghargai ajakannya, namun dengan sopan mengusulkan alternatif tempat makan lain yang bisa dinikmati bersama atau makan di tempat berbeda namun duduk semeja.", score: 5},
+                    {text: "Menolak ajakannya dengan alasan keyakinan.", score: 4},
+                    {text: "Ikut saja namun hanya memesan minuman.", score: 3},
+                    {text: "Menerima ajakannya dan tidak makan apa-apa.", score: 2},
+                    {text: "Menyindirnya karena tidak peka terhadap keyakinan Anda.", score: 1},
+                ], 
+                answer: "Menghargai ajakannya, namun dengan sopan mengusulkan alternatif tempat makan lain yang bisa dinikmati bersama atau makan di tempat berbeda namun duduk semeja.", 
+                pembahasan: "Menunjukkan kemampuan mengelola sosial kultural, toleransi, dan mencari solusi yang menjaga hubungan baik tanpa mengorbankan prinsip (Skor 5)." 
+            },
+            { category: 'TKP', question: "Atasan Anda memberikan pujian atas hasil kerja tim yang sebenarnya sebagian besar adalah hasil kerja keras Anda. Saat memberikan pujian, atasan tidak menyebut nama Anda secara spesifik. Reaksi Anda...", 
+                options: [
+                    {text: "Menerima pujian tersebut sebagai keberhasilan tim dan percaya bahwa kontribusi individu pada akhirnya akan terlihat.", score: 5},
+                    {text: "Merasa sedikit kecewa namun tetap profesional.", score: 4},
+                    {text: "Mengatakan kepada rekan-rekan bahwa itu sebagian besar adalah hasil kerja saya.", score: 3},
+                    {text: "Menemui atasan dan mengklarifikasi bahwa peran saya sangat dominan dalam pekerjaan tersebut.", score: 2},
+                    {text: "Kehilangan motivasi karena merasa tidak dihargai.", score: 1},
+                ], 
+                answer: "Menerima pujian tersebut sebagai keberhasilan tim dan percaya bahwa kontribusi individu pada akhirnya akan terlihat.", 
+                pembahasan: "Menunjukkan kedewasaan, profesionalisme, dan kemampuan untuk mengutamakan kebersamaan tim di atas ego pribadi (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda diminta untuk mempelajari sebuah regulasi baru yang sangat tebal dan rumit dalam waktu singkat. Anda akan...", 
+                options: [
+                    {text: "Membuat ringkasan atau peta konsep dari regulasi tersebut, fokus pada poin-poin kunci yang paling relevan dengan pekerjaan saya.", score: 5},
+                    {text: "Membacanya sekilas dari awal sampai akhir.", score: 4},
+                    {text: "Mengajak rekan lain untuk belajar bersama dan membagi bab untuk dipelajari.", score: 3},
+                    {text: "Menunda mempelajarinya karena merasa tidak akan sanggup.", score: 2},
+                    {text: "Hanya akan membaca bagian yang ditanyakan oleh atasan.", score: 1},
+                ], 
+                answer: "Membuat ringkasan atau peta konsep dari regulasi tersebut, fokus pada poin-poin kunci yang paling relevan dengan pekerjaan saya.", 
+                pembahasan: "Menunjukkan kemampuan belajar yang efektif, mengelola informasi, dan proaktif dalam menghadapi tantangan (Skor 5)." 
+            },
+            { category: 'TKP', question: "Di lingkungan kerja Anda, ada kebiasaan untuk memberikan 'hadiah' kepada atasan saat beliau berulang tahun. Anda merasa ini tidak sesuai dengan prinsip integritas. Anda akan...", 
+                options: [
+                    {text: "Tidak ikut berpartisipasi dan dengan sopan menjelaskan pandangan saya jika ditanya, tanpa menghakimi yang lain.", score: 5},
+                    {text: "Ikut berpartisipasi dengan nominal kecil agar tidak terlihat aneh.", score: 4},
+                    {text: "Melaporkan kebiasaan ini ke unit pengawasan internal.", score: 3},
+                    {text: "Menasihati semua rekan kerja untuk menghentikan kebiasaan tersebut.", score: 2},
+                    {text: "Ikut berpartisipasi karena merasa tidak enak dengan rekan lain.", score: 1},
+                ], 
+                answer: "Tidak ikut berpartisipasi dan dengan sopan menjelaskan pandangan saya jika ditanya, tanpa menghakimi yang lain.", 
+                pembahasan: "Menunjukkan integritas pribadi yang kokoh, namun tetap bisa menjaga hubungan sosial dengan tidak memaksakan pandangan kepada orang lain (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda adalah seorang ASN di bidang IT. Anda menemukan sebuah celah keamanan pada sistem data instansi yang bisa dieksploitasi. Tindakan Anda...", 
+                options: [
+                    {text: "Segera membuat laporan detail mengenai temuan tersebut beserta rekomendasi perbaikannya dan menyampaikannya secara rahasia kepada atasan langsung atau tim keamanan siber.", score: 5},
+                    {text: "Mencoba memperbaikinya sendiri tanpa melapor terlebih dahulu.", score: 4},
+                    {text: "Membicarakannya dengan rekan sesama tim IT untuk memastikan temuannya valid.", score: 3},
+                    {text: "Mendiamkannya karena bukan tugas utama saya untuk mencari celah keamanan.", score: 2},
+                    {text: "Mempublikasikan temuan tersebut di forum IT agar instansi segera memperbaikinya.", score: 1},
+                ], 
+                answer: "Segera membuat laporan detail mengenai temuan tersebut beserta rekomendasi perbaikannya dan menyampaikannya secara rahasia kepada atasan langsung atau tim keamanan siber.", 
+                pembahasan: "Menunjukkan penguasaan TIK, tanggung jawab, integritas, dan pemahaman prosedur keamanan yang benar (Skor 5)." 
+            },
+            { category: 'TKP', question: "Tim Anda berhasil menyelesaikan sebuah proyek besar lebih cepat dari tenggat waktu. Apa yang akan Anda lakukan dengan sisa waktu yang ada?", 
+                options: [
+                    {text: "Menggunakan waktu tersebut untuk melakukan evaluasi proyek, merapikan dokumentasi, dan mulai merencanakan langkah selanjutnya.", score: 5},
+                    {text: "Menawarkan bantuan kepada tim lain yang mungkin masih membutuhkan.", score: 4},
+                    {text: "Menggunakan waktu untuk bersantai karena sudah bekerja keras.", score: 3},
+                    {text: "Mempelajari hal-hal baru yang tidak berhubungan dengan pekerjaan.", score: 2},
+                    {text: "Pulang lebih awal karena tugas sudah selesai.", score: 1},
+                ], 
+                answer: "Menggunakan waktu tersebut untuk melakukan evaluasi proyek, merapikan dokumentasi, dan mulai merencanakan langkah selanjutnya.", 
+                pembahasan: "Menunjukkan profesionalisme, orientasi pada kualitas, dan kemampuan berpikir strategis (Skor 5)." 
+            },
+            { category: 'TKP', question: "Seorang warga yang Anda layani tampak kebingungan dengan formulir yang harus diisi. Anda akan...", 
+                options: [
+                    {text: "Menghampirinya dan dengan sabar menjelaskan cara pengisian formulir tersebut, bahkan memberikan contoh jika perlu.", score: 5},
+                    {text: "Memintanya untuk membaca petunjuk pengisian yang sudah tersedia.", score: 4},
+                    {text: "Menyuruhnya bertanya pada warga lain yang sudah selesai mengisi.", score: 3},
+                    {text: "Mengisikan formulir tersebut untuknya agar lebih cepat.", score: 2},
+                    {text: "Mengabaikannya karena Anda sedang sibuk melayani yang lain.", score: 1},
+                ], 
+                answer: "Menghampirinya dan dengan sabar menjelaskan cara pengisian formulir tersebut, bahkan memberikan contoh jika perlu.", 
+                pembahasan: "Menunjukkan orientasi pelayanan yang tinggi, empati, dan proaktif dalam membantu masyarakat (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda dipindahkan ke unit kerja yang memiliki reputasi kurang baik dan pegawainya dianggap tidak disiplin. Langkah pertama Anda adalah...", 
+                options: [
+                    {text: "Menunjukkan teladan dengan bekerja secara profesional dan disiplin, sambil mencoba memahami akar masalah di unit tersebut.", score: 5},
+                    {text: "Menjaga jarak dan bekerja secara individu agar tidak terpengaruh.", score: 4},
+                    {text: "Langsung mencoba menerapkan aturan disiplin yang ketat.", score: 3},
+                    {text: "Mengeluh kepada atasan dan meminta untuk dipindahkan lagi.", score: 2},
+                    {text: "Ikut larut dalam budaya kerja yang tidak disiplin.", score: 1},
+                ], 
+                answer: "Menunjukkan teladan dengan bekerja secara profesional dan disiplin, sambil mencoba memahami akar masalah di unit tersebut.", 
+                pembahasan: "Menunjukkan kemampuan beradaptasi, integritas, dan kepemimpinan melalui teladan (leading by example) (Skor 5)." 
+            },
+            { category: 'TKP', question: "Rekan kerja Anda sering meminta bantuan untuk menyelesaikan tugasnya, padahal Anda juga memiliki banyak pekerjaan. Anda akan...", 
+                options: [
+                    {text: "Membantunya jika saya memiliki waktu luang, namun jika tidak, saya akan menolak secara halus dan menyarankannya untuk mencoba terlebih dahulu.", score: 5},
+                    {text: "Selalu membantunya karena merasa tidak enak untuk menolak.", score: 4},
+                    {text: "Mengajarinya cara mengerjakan tugas tersebut agar lain kali ia bisa mandiri.", score: 3},
+                    {text: "Menolaknya dengan tegas karena itu bukan pekerjaan saya.", score: 2},
+                    {text: "Melaporkannya kepada atasan karena ia tidak kompeten.", score: 1},
+                ], 
+                answer: "Membantunya jika saya memiliki waktu luang, namun jika tidak, saya akan menolak secara halus dan menyarankannya untuk mencoba terlebih dahulu.", 
+                pembahasan: "Menunjukkan kemampuan mengelola batasan (boundaries), asertif, namun tetap menjaga hubungan baik dengan rekan kerja (Skor 5)." 
+            },
+            { category: 'TKP', question: "Instansi tempat Anda bekerja sedang gencar mempromosikan gaya hidup sehat. Kontribusi Anda adalah...", 
+                options: [
+                    {text: "Mengajak rekan-rekan untuk melakukan peregangan singkat di sela-sela pekerjaan dan memilih menu makan siang yang lebih sehat.", score: 5},
+                    {text: "Mengikuti seminar atau kegiatan olahraga yang diadakan kantor.", score: 4},
+                    {text: "Membagikan artikel tentang hidup sehat di grup percakapan kantor.", score: 3},
+                    {text: "Menerapkan gaya hidup sehat untuk diri sendiri.", score: 2},
+                    {text: "Tidak tertarik karena merasa itu urusan pribadi.", score: 1},
+                ], 
+                answer: "Mengajak rekan-rekan untuk melakukan peregangan singkat di sela-sela pekerjaan dan memilih menu makan siang yang lebih sehat.", 
+                pembahasan: "Menunjukkan inisiatif, kemampuan mempengaruhi secara positif, dan kepedulian terhadap lingkungan kerja (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda tidak sengaja mendengar atasan Anda memberikan informasi yang bersifat rahasia kepada pihak luar. Sikap Anda...", 
+                options: [
+                    {text: "Mencari bukti yang lebih kuat dan melaporkannya melalui saluran pengaduan pelanggaran (whistleblowing system) yang resmi dan rahasia.", score: 5},
+                    {text: "Langsung menegur atasan Anda.", score: 4},
+                    {text: "Menceritakannya kepada rekan kerja yang Anda percaya.", score: 3},
+                    {text: "Pura-pura tidak mendengar karena takut terkena masalah.", score: 2},
+                    {text: "Mencoba memanfaatkan informasi tersebut untuk keuntungan pribadi.", score: 1},
+                ], 
+                answer: "Mencari bukti yang lebih kuat dan melaporkannya melalui saluran pengaduan pelanggaran (whistleblowing system) yang resmi dan rahasia.", 
+                pembahasan: "Menunjukkan integritas, keberanian, dan pemahaman tentang prosedur yang benar dan aman dalam melaporkan pelanggaran serius (Skor 5)." 
+            },
+            { category: 'TKP', question: "Menurut Anda, seorang ASN yang profesional adalah yang...", 
+                options: [
+                    {text: "Memiliki kompetensi tinggi, berintegritas, dan mampu berkolaborasi untuk mencapai tujuan organisasi.", score: 5},
+                    {text: "Selalu datang tepat waktu dan menyelesaikan semua tugas yang diberikan.", score: 4},
+                    {text: "Mampu melayani masyarakat dengan ramah.", score: 3},
+                    {text: "Memiliki banyak sertifikat keahlian.", score: 2},
+                    {text: "Tidak pernah membuat kesalahan dalam bekerja.", score: 1},
+                ], 
+                answer: "Memiliki kompetensi tinggi, berintegritas, dan mampu berkolaborasi untuk mencapai tujuan organisasi.", 
+                pembahasan: "Jawaban ini paling komprehensif, mencakup aspek kompetensi teknis (kompetensi), karakter (integritas), dan sosial (kolaborasi) (Skor 5)." 
+            },
+            { category: 'TKP', question: "Saat rapat, Anda memiliki pendapat yang berbeda dengan mayoritas anggota tim. Anda akan...", 
+                options: [
+                    {text: "Tetap menyampaikan pendapat saya dengan argumen yang logis dan data, meskipun pada akhirnya harus menghormati keputusan bersama.", score: 5},
+                    {text: "Menyimpan pendapat saya untuk diri sendiri agar tidak menimbulkan konflik.", score: 4},
+                    {text: "Mengikuti pendapat mayoritas agar rapat cepat selesai.", score: 3},
+                    {text: "Berusaha keras meyakinkan semua orang untuk mengikuti pendapat saya.", score: 2},
+                    {text: "Keluar dari rapat karena merasa pendapat tidak dihargai.", score: 1},
+                ], 
+                answer: "Tetap menyampaikan pendapat saya dengan argumen yang logis dan data, meskipun pada akhirnya harus menghormati keputusan bersama.", 
+                pembahasan: "Menunjukkan keberanian berpendapat, pemikiran kritis, sekaligus kemampuan menghargai proses demokrasi dalam tim (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda melihat rekan kerja menggunakan komputer kantor untuk melakukan pekerjaan sampingannya di jam kerja. Anda akan...", 
+                options: [
+                    {text: "Mengingatkannya secara pribadi dan baik-baik bahwa hal tersebut tidak etis dan bisa berdampak buruk.", score: 5},
+                    {text: "Membiarkannya selama pekerjaan utamanya tidak terganggu.", score: 4},
+                    {text: "Melaporkannya secara anonim kepada atasan.", score: 3},
+                    {text: "Menyindirnya agar ia merasa tidak nyaman.", score: 2},
+                    {text: "Tidak peduli karena itu bukan urusan saya.", score: 1},
+                ], 
+                answer: "Mengingatkannya secara pribadi dan baik-baik bahwa hal tersebut tidak etis dan bisa berdampak buruk.", 
+                pembahasan: "Menunjukkan kepedulian terhadap integritas dan etika kerja, serta memilih cara yang paling konstruktif untuk menyelesaikan masalah (Skor 5)." 
+            },
+            { category: 'TKP', question: "Bagaimana Anda memastikan bahwa Anda terus berkembang dan relevan dengan tuntutan pekerjaan?", 
+                options: [
+                    {text: "Secara proaktif mencari peluang belajar, baik melalui pelatihan, membaca, maupun berdiskusi dengan ahli di bidangnya.", score: 5},
+                    {text: "Mengikuti semua pelatihan yang diwajibkan oleh kantor.", score: 4},
+                    {text: "Belajar dari pengalaman dan kesalahan sehari-hari.", score: 3},
+                    {text: "Bertanya kepada atasan, kompetensi apa yang perlu saya tingkatkan.", score: 2},
+                    {text: "Merasa kompetensi yang dimiliki saat ini sudah cukup.", score: 1},
+                ], 
+                answer: "Secara proaktif mencari peluang belajar, baik melalui pelatihan, membaca, maupun berdiskusi dengan ahli di bidangnya.", 
+                pembahasan: "Menunjukkan orientasi pada pengembangan diri yang berkelanjutan dan inisiatif tinggi (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda diminta untuk memimpin sebuah acara kantor yang penting, namun Anda adalah seorang yang introvert dan tidak suka menjadi pusat perhatian. Anda akan...", 
+                options: [
+                    {text: "Menerima tugas tersebut sebagai tantangan untuk keluar dari zona nyaman dan mempersiapkannya dengan matang.", score: 5},
+                    {text: "Menerima tugas, namun mendelegasikannya kepada rekan yang lebih pandai berbicara di depan umum.", score: 4},
+                    {text: "Menjelaskan kepada atasan bahwa saya kurang cocok untuk tugas tersebut dan menyarankan orang lain.", score: 3},
+                    {text: "Menolaknya dengan alasan tidak percaya diri.", score: 2},
+                    {text: "Menerimanya dengan sangat terpaksa dan cemas.", score: 1},
+                ], 
+                answer: "Menerima tugas tersebut sebagai tantangan untuk keluar dari zona nyaman dan mempersiapkannya dengan matang.", 
+                pembahasan: "Menunjukkan kemauan untuk berkembang, kemampuan beradaptasi, dan tanggung jawab dalam menjalankan tugas (Skor 5)." 
+            },
+            { category: 'TKP', question: "Seorang teman lama menghubungi Anda dan meminta bantuan untuk mempercepat proses pengurusan izin di kantor Anda, dengan iming-iming akan memberikan komisi. Anda akan...", 
+                options: [
+                    {text: "Menolak dengan tegas tawaran komisi dan menjelaskan bahwa Anda hanya bisa membantu memberikan informasi sesuai prosedur yang berlaku untuk semua orang.", score: 5},
+                    {text: "Membantunya mempercepat proses tanpa menerima komisi karena ia teman lama.", score: 4},
+                    {text: "Menyarankannya untuk menggunakan jasa calo resmi jika ada.", score: 3},
+                    {text: "Menerima tawarannya karena sedang butuh uang tambahan.", score: 2},
+                    {text: "Menolak permintaannya dan tidak mau lagi berhubungan dengannya.", score: 1},
+                ], 
+                answer: "Menolak dengan tegas tawaran komisi dan menjelaskan bahwa Anda hanya bisa membantu memberikan informasi sesuai prosedur yang berlaku untuk semua orang.", 
+                pembahasan: "Menunjukkan integritas yang tinggi, mampu memisahkan urusan pribadi dan profesional, serta menolak gratifikasi secara tegas (Skor 5)." 
+            },
+            { category: 'TKP', question: "Pekerjaan Anda menumpuk dan tenggat waktunya bersamaan. Bagaimana Anda menentukan prioritas?", 
+                options: [
+                    {text: "Mengklasifikasikan pekerjaan berdasarkan urgensi (mendesak atau tidak) dan tingkat kepentingannya (penting atau tidak), lalu mengerjakan yang paling mendesak dan penting terlebih dahulu.", score: 5},
+                    {text: "Mengerjakan pekerjaan yang paling mudah terlebih dahulu agar cepat selesai.", score: 4},
+                    {text: "Mengerjakan pekerjaan dengan tenggat waktu paling dekat.", score: 3},
+                    {text: "Meminta bantuan rekan kerja untuk sebagian pekerjaan.", score: 2},
+                    {text: "Bekerja lembur sampai semua pekerjaan selesai tanpa prioritas.", score: 1},
+                ], 
+                answer: "Mengklasifikasikan pekerjaan berdasarkan urgensi (mendesak atau tidak) dan tingkat kepentingannya (penting atau tidak), lalu mengerjakan yang paling mendesak dan penting terlebih dahulu.", 
+                pembahasan: "Menunjukkan kemampuan manajemen waktu dan pengambilan keputusan yang efektif dengan menggunakan matriks prioritas Eisenhower (Skor 5)." 
+            },
+            { category: 'TKP', question: "Atasan Anda dikenal sangat perfeksionis dan sering mengkritik hasil kerja bawahan. Sikap Anda terhadapnya adalah...", 
+                options: [
+                    {text: "Memandang kritiknya sebagai masukan untuk meningkatkan kualitas kerja dan berusaha memahami standarnya yang tinggi.", score: 5},
+                    {text: "Bekerja dengan sangat hati-hati dan selalu melakukan pengecekan berulang kali sebelum menyerahkan pekerjaan.", score: 4},
+                    {text: "Merasa tertekan dan cemas setiap kali akan menyerahkan pekerjaan.", score: 3},
+                    {text: "Menganggap atasan terlalu banyak menuntut.", score: 2},
+                    {text: "Menghindar untuk berinteraksi langsung dengannya.", score: 1},
+                ], 
+                answer: "Memandang kritiknya sebagai masukan untuk meningkatkan kualitas kerja dan berusaha memahami standarnya yang tinggi.", 
+                pembahasan: "Menunjukkan pola pikir positif, ketahanan terhadap tekanan, dan orientasi pada kualitas dan pengembangan diri (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda menemukan bahwa ada program pemerintah yang sangat bagus namun kurang tersosialisasi kepada masyarakat. Sebagai ASN, Anda akan...", 
+                options: [
+                    {text: "Mengusulkan kepada unit terkait untuk membuat materi sosialisasi yang lebih mudah dipahami (infografis, video) dan menyebarkannya melalui media sosial atau forum warga.", score: 5},
+                    {text: "Membantu menjelaskannya kepada orang-orang di lingkungan terdekat saya.", score: 4},
+                    {text: "Membagikan tautan berita tentang program tersebut di media sosial pribadi.", score: 3},
+                    {text: "Menyayangkan kurangnya sosialisasi tersebut dalam hati.", score: 2},
+                    {text: "Menganggap itu bukan tugas saya untuk melakukan sosialisasi.", score: 1},
+                ], 
+                answer: "Mengusulkan kepada unit terkait untuk membuat materi sosialisasi yang lebih mudah dipahami (infografis, video) dan menyebarkannya melalui media sosial atau forum warga.", 
+                pembahasan: "Menunjukkan inisiatif, kreativitas, dan kepedulian yang tinggi terhadap keberhasilan program pemerintah dan pelayanan publik (Skor 5)." 
+            },
+            { category: 'TKP', question: "Apa yang Anda pahami tentang 'netralitas ASN'?", 
+                options: [
+                    {text: "Tidak berpihak pada kekuatan politik manapun, tidak diskriminatif dalam memberikan pelayanan, dan fokus bekerja untuk negara dan masyarakat.", score: 5},
+                    {text: "Tidak memiliki hak pilih dalam pemilihan umum.", score: 4},
+                    {text: "Tidak boleh memiliki akun media sosial.", score: 3},
+                    {text: "Hanya mengikuti arahan dari pimpinan tanpa memandang latar belakang politiknya.", score: 2},
+                    {text: "Tidak boleh berteman dengan politisi.", score: 1},
+                ], 
+                answer: "Tidak berpihak pada kekuatan politik manapun, tidak diskriminatif dalam memberikan pelayanan, dan fokus bekerja untuk negara dan masyarakat.", 
+                pembahasan: "Jawaban ini paling akurat dan komprehensif dalam mendefinisikan esensi dari netralitas ASN sesuai peraturan perundang-undangan (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda diminta memberikan masukan terhadap kinerja seorang rekan yang juga teman baik Anda. Kinerjanya secara objektif kurang baik. Anda akan...", 
+                options: [
+                    {text: "Menyampaikan masukan secara jujur dan objektif dengan cara yang suportif dan menawarkan bantuan untuk perbaikan.", score: 5},
+                    {text: "Memberikan penilaian yang sedikit lebih baik dari seharusnya untuk menjaga pertemanan.", score: 4},
+                    {text: "Berbicara dengannya secara pribadi terlebih dahulu sebelum memberikan penilaian resmi.", score: 3},
+                    {text: "Menolak memberikan masukan karena ada konflik kepentingan.", score: 2},
+                    {text: "Memberikan penilaian yang bagus karena ia teman baik saya.", score: 1},
+                ], 
+                answer: "Menyampaikan masukan secara jujur dan objektif dengan cara yang suportif dan menawarkan bantuan untuk perbaikan.", 
+                pembahasan: "Menunjukkan kemampuan untuk tetap profesional dan objektif meskipun ada hubungan personal, serta memberikan umpan balik yang konstruktif (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda melihat ada ketidakadilan dalam pembagian beban kerja di tim Anda, di mana beberapa orang bekerja sangat keras sementara yang lain sangat santai. Anda akan...", 
+                options: [
+                    {text: "Mengusulkan kepada ketua tim untuk melakukan evaluasi dan redistribusi beban kerja yang lebih adil dan transparan.", score: 5},
+                    {text: "Menawarkan bantuan kepada rekan yang beban kerjanya paling berat.", score: 4},
+                    {text: "Fokus pada pekerjaan saya sendiri dan tidak ikut campur.", score: 3},
+                    {text: "Mengeluh bersama rekan-rekan yang merasa dirugikan.", score: 2},
+                    {text: "Bekerja lebih santai agar sama seperti yang lain.", score: 1},
+                ], 
+                answer: "Mengusulkan kepada ketua tim untuk melakukan evaluasi dan redistribusi beban kerja yang lebih adil dan transparan.", 
+                pembahasan: "Menunjukkan inisiatif, kepedulian terhadap tim, dan kemampuan mencari solusi sistemik daripada solusi sementara (Skor 5)." 
+            },
+            { category: 'TKP', question: "Saat sedang bekerja, listrik di seluruh gedung tiba-tiba padam dan diperkirakan akan berlangsung lama. Apa yang Anda lakukan?", 
+                options: [
+                    {text: "Mencari pekerjaan lain yang bisa dilakukan tanpa listrik, seperti merapikan berkas fisik atau berdiskusi dengan tim mengenai rencana kerja.", score: 5},
+                    {text: "Menunggu instruksi dari atasan.", score: 4},
+                    {text: "Menggunakan hotspot dari ponsel untuk melanjutkan pekerjaan di laptop jika memungkinkan.", score: 3},
+                    {text: "Mengobrol dengan rekan kerja hingga listrik menyala kembali.", score: 2},
+                    {text: "Langsung pulang karena tidak bisa bekerja.", score: 1},
+                ], 
+                answer: "Mencari pekerjaan lain yang bisa dilakukan tanpa listrik, seperti merapikan berkas fisik atau berdiskusi dengan tim mengenai rencana kerja.", 
+                pembahasan: "Menunjukkan kemampuan beradaptasi, proaktif, dan manajemen waktu yang baik dalam menghadapi situasi tak terduga (Skor 5)." 
+            },
+            { category: 'TKP', question: "Rekan kerja Anda memenangkan sebuah penghargaan bergengsi yang juga Anda incar. Reaksi Anda adalah...", 
+                options: [
+                    {text: "Memberikan ucapan selamat dengan tulus dan menjadikannya motivasi untuk bekerja lebih baik lagi di masa depan.", score: 5},
+                    {text: "Memberikan ucapan selamat, meskipun dalam hati merasa iri.", score: 4},
+                    {text: "Menganalisis apa yang membuatnya menang dan saya tidak.", score: 3},
+                    {text: "Merasa penghargaan tersebut tidak adil.", score: 2},
+                    {text: "Menjauhinya karena merasa cemburu.", score: 1},
+                ], 
+                answer: "Memberikan ucapan selamat dengan tulus dan menjadikannya motivasi untuk bekerja lebih baik lagi di masa depan.", 
+                pembahasan: "Menunjukkan sportivitas, kedewasaan emosional, dan pola pikir yang positif (growth mindset) (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda diminta untuk membuat sebuah presentasi penting untuk dewan direksi dalam waktu dua hari. Anda akan...", 
+                options: [
+                    {text: "Segera menyusun kerangka presentasi, mengumpulkan data yang diperlukan, membuat slide yang ringkas dan visual, serta berlatih menyampaikannya.", score: 5},
+                    {text: "Menggunakan template presentasi lama dan hanya mengubah datanya.", score: 4},
+                    {text: "Meminta contoh presentasi dari senior sebagai referensi.", score: 3},
+                    {text: "Fokus pada pengumpulan data sebanyak-banyaknya.", score: 2},
+                    {text: "Merasa panik karena waktu yang sangat singkat.", score: 1},
+                ], 
+                answer: "Segera menyusun kerangka presentasi, mengumpulkan data yang diperlukan, membuat slide yang ringkas dan visual, serta berlatih menyampaikannya.", 
+                pembahasan: "Menunjukkan kemampuan perencanaan, manajemen waktu, dan persiapan yang komprehensif untuk mencapai hasil terbaik (Skor 5)." 
+            },
+            { category: 'TKP', question: "Seorang warga yang Anda layani memberikan kritik yang sangat tajam dan pedas mengenai kinerja instansi Anda. Anda akan...", 
+                options: [
+                    {text: "Mengucapkan terima kasih atas masukannya, mencatat poin-poin kritiknya, dan berjanji akan menyampaikannya kepada pihak yang berwenang untuk perbaikan.", score: 5},
+                    {text: "Mencoba membela instansi dengan menjelaskan alasan di balik kekurangan yang ada.", score: 4},
+                    {text: "Mendengarkannya saja tanpa memberikan respons.", score: 3},
+                    {text: "Merasa tersinggung dan berdebat dengannya.", score: 2},
+                    {text: "Memintanya untuk menyampaikan kritik melalui kotak saran saja.", score: 1},
+                ], 
+                answer: "Mengucapkan terima kasih atas masukannya, mencatat poin-poin kritiknya, dan berjanji akan menyampaikannya kepada pihak yang berwenang untuk perbaikan.", 
+                pembahasan: "Menunjukkan profesionalisme, orientasi pada pelayanan, dan kemampuan mengelola kritik sebagai umpan balik yang berharga (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda memiliki bawahan yang kinerjanya menurun drastis. Langkah pertama yang akan Anda ambil sebagai atasan adalah...", 
+                options: [
+                    {text: "Mengajaknya berbicara secara pribadi untuk mencari tahu penyebab masalahnya dan menawarkan bantuan atau solusi.", score: 5},
+                    {text: "Memberikan surat peringatan secara langsung.", score: 4},
+                    {text: "Mengurangi beban kerjanya untuk sementara waktu.", score: 3},
+                    {text: "Memindahkannya ke tugas yang lebih mudah.", score: 2},
+                    {text: "Mengabaikannya dan berharap kinerjanya akan membaik sendiri.", score: 1},
+                ], 
+                answer: "Mengajaknya berbicara secara pribadi untuk mencari tahu penyebab masalahnya dan menawarkan bantuan atau solusi.", 
+                pembahasan: "Menunjukkan kepemimpinan yang empatik, peduli, dan berorientasi pada pembinaan serta penyelesaian akar masalah (Skor 5)." 
+            },
+            { category: 'TKP', question: "Saat mengikuti diklat, Anda ditempatkan dalam satu kelompok dengan orang-orang yang tidak Anda kenal dari berbagai instansi. Agar kerja kelompok efektif, Anda akan...", 
+                options: [
+                    {text: "Mengambil inisiatif untuk memulai perkenalan, mencairkan suasana, dan mengajak tim untuk segera membahas pembagian tugas.", score: 5},
+                    {text: "Menunggu ada orang lain yang memulai pembicaraan.", score: 4},
+                    {text: "Hanya berbicara dengan orang yang duduk di sebelah saya.", score: 3},
+                    {text: "Fokus mengerjakan bagian tugas saya sendiri dengan baik.", score: 2},
+                    {text: "Merasa canggung dan lebih banyak diam.", score: 1},
+                ], 
+                answer: "Mengambil inisiatif untuk memulai perkenalan, mencairkan suasana, dan mengajak tim untuk segera membahas pembagian tugas.", 
+                pembahasan: "Menunjukkan kemampuan membangun jejaring kerja, kolaborasi, dan inisiatif yang tinggi (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda baru saja menyelesaikan pekerjaan, namun atasan meminta Anda untuk merevisinya karena ada perubahan kebijakan mendadak. Anda akan...", 
+                options: [
+                    {text: "Menerima permintaan revisi tersebut dengan lapang dada dan segera mengerjakannya sesuai arahan baru.", score: 5},
+                    {text: "Merasa sedikit kesal, namun tetap akan mengerjakannya.", score: 4},
+                    {text: "Menanyakan apakah revisi tersebut benar-benar mendesak.", score: 3},
+                    {text: "Mengeluh karena harus bekerja dua kali.", score: 2},
+                    {text: "Menunda mengerjakannya karena merasa lelah.", score: 1},
+                ], 
+                answer: "Menerima permintaan revisi tersebut dengan lapang dada dan segera mengerjakannya sesuai arahan baru.", 
+                pembahasan: "Menunjukkan fleksibilitas, kemampuan beradaptasi dengan perubahan, dan profesionalisme yang tinggi (Skor 5)." 
+            },
+            { category: 'TKP', question: "Menurut Anda, apa cara paling efektif untuk menjaga integritas di tengah lingkungan yang koruptif?", 
+                options: [
+                    {text: "Memperkuat prinsip dan nilai-nilai pribadi, serta berani mengatakan 'tidak' pada setiap ajakan yang menyimpang.", score: 5},
+                    {text: "Mencari teman yang memiliki prinsip yang sama untuk saling menguatkan.", score: 4},
+                    {text: "Menghindari situasi atau posisi yang rawan godaan.", score: 3},
+                    {text: "Selalu mengingat keluarga dan konsekuensi hukum.", score: 2},
+                    {text: "Banyak berdoa agar dijauhkan dari godaan.", score: 1},
+                ], 
+                answer: "Memperkuat prinsip dan nilai-nilai pribadi, serta berani mengatakan 'tidak' pada setiap ajakan yang menyimpang.", 
+                pembahasan: "Menunjukkan bahwa integritas sejati berasal dari dalam diri (prinsip) dan diwujudkan dalam tindakan nyata (berani berkata tidak) (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda diminta untuk mengelola anggaran sebuah kegiatan. Untuk memastikan akuntabilitas, Anda akan...", 
+                options: [
+                    {text: "Membuat perencanaan anggaran yang detail, mencatat setiap pengeluaran dengan bukti yang sah, dan membuat laporan pertanggungjawaban yang transparan.", score: 5},
+                    {text: "Menyimpan semua kuitansi pengeluaran.", score: 4},
+                    {text: "Menggunakan anggaran sehemat mungkin.", score: 3},
+                    {text: "Meminta bendahara untuk mengurus semua keuangannya.", score: 2},
+                    {text: "Menggunakan anggaran sesuai arahan pimpinan.", score: 1},
+                ], 
+                answer: "Membuat perencanaan anggaran yang detail, mencatat setiap pengeluaran dengan bukti yang sah, dan membuat laporan pertanggungjawaban yang transparan.", 
+                pembahasan: "Menunjukkan pemahaman yang komprehensif tentang pengelolaan keuangan yang akuntabel, mulai dari perencanaan, pelaksanaan, hingga pelaporan (Skor 5)." 
+            },
+            { category: 'TKP', question: "Seorang rekan kerja terlihat murung dan tidak bersemangat selama beberapa hari. Anda akan...", 
+                options: [
+                    {text: "Menyapanya secara pribadi, menanyakan kabarnya, dan menawarkan diri untuk mendengarkan jika ia ingin bercerita, tanpa memaksa.", score: 5},
+                    {text: "Menghiburnya dengan lelucon.", score: 4},
+                    {text: "Memberitahu atasan bahwa kinerja rekan tersebut sedang menurun.", score: 3},
+                    {text: "Membiarkannya karena itu masalah pribadinya.", score: 2},
+                    {text: "Menjauhinya agar tidak tertular energi negatif.", score: 1},
+                ], 
+                answer: "Menyapanya secara pribadi, menanyakan kabarnya, dan menawarkan diri untuk mendengarkan jika ia ingin bercerita, tanpa memaksa.", 
+                pembahasan: "Menunjukkan empati, kepedulian sosial, dan kecerdasan emosional dalam berinteraksi dengan rekan kerja (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda mendapatkan kesempatan untuk mengikuti program pertukaran pegawai ke luar negeri. Apa yang akan menjadi prioritas Anda di sana?", 
+                options: [
+                    {text: "Mempelajari praktik kerja terbaik (best practices) yang bisa diadopsi dan diterapkan di instansi saya, serta membangun jaringan internasional.", score: 5},
+                    {text: "Menikmati pengalaman tinggal di negara lain dan jalan-jalan.", score: 4},
+                    {text: "Mempelajari bahasa dan budaya setempat.", score: 3},
+                    {text: "Menjaga nama baik Indonesia dan instansi saya.", score: 2},
+                    {text: "Menyelesaikan semua tugas yang diberikan selama program.", score: 1},
+                ], 
+                answer: "Mempelajari praktik kerja terbaik (best practices) yang bisa diadopsi dan diterapkan di instansi saya, serta membangun jaringan internasional.", 
+                pembahasan: "Menunjukkan visi yang jauh ke depan, berorientasi pada kontribusi nyata bagi organisasi, dan kemampuan memanfaatkan peluang secara maksimal (Skor 5)." 
+            },
+            { category: 'TKP', question: "Bagaimana Anda menyikapi berita atau informasi yang belum terverifikasi kebenarannya (hoax) di grup percakapan?", 
+                options: [
+                    {text: "Tidak ikut menyebarkan, dan jika perlu, memberikan tautan klarifikasi dari sumber yang kredibel untuk meluruskan informasi.", score: 5},
+                    {text: "Mendiamkannya dan tidak ikut berkomentar.", score: 4},
+                    {text: "Menanyakan sumber berita tersebut kepada yang mengirim.", score: 3},
+                    {text: "Langsung menghapus pesan tersebut jika saya adalah admin.", score: 2},
+                    {text: "Ikut menyebarkannya ke grup lain untuk meminta konfirmasi.", score: 1},
+                ], 
+                answer: "Tidak ikut menyebarkan, dan jika perlu, memberikan tautan klarifikasi dari sumber yang kredibel untuk meluruskan informasi.", 
+                pembahasan: "Menunjukkan literasi digital yang baik, sikap bertanggung jawab, dan proaktif dalam melawan penyebaran hoax (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda diminta untuk bekerja sama dengan seseorang yang pernah memiliki konflik dengan Anda di masa lalu. Anda akan...", 
+                options: [
+                    {text: "Bersikap profesional, mengesampingkan masalah pribadi, dan fokus pada tujuan pekerjaan demi keberhasilan tim.", score: 5},
+                    {text: "Bekerja sama dengannya namun tetap menjaga jarak.", score: 4},
+                    {text: "Meminta kepada atasan untuk tidak dipasangkan dengannya.", score: 3},
+                    {text: "Bekerja secara individual dan hanya berkoordinasi seperlunya.", score: 2},
+                    {text: "Mengungkit kembali masalah lama dengannya.", score: 1},
+                ], 
+                answer: "Bersikap profesional, mengesampingkan masalah pribadi, dan fokus pada tujuan pekerjaan demi keberhasilan tim.", 
+                pembahasan: "Menunjukkan tingkat profesionalisme dan kedewasaan yang tinggi dalam mengelola konflik dan hubungan interpersonal (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda adalah satu-satunya orang di tim yang tidak setuju dengan sebuah keputusan yang akan diambil. Anda sudah menyampaikan argumen namun tetap ditolak. Langkah Anda selanjutnya...", 
+                options: [
+                    {text: "Tetap menghormati keputusan bersama dan melaksanakannya dengan penuh tanggung jawab sebagai bagian dari komitmen tim.", score: 5},
+                    {text: "Melaksanakan keputusan tersebut dengan setengah hati.", score: 4},
+                    {text: "Menyatakan 'dissenting opinion' (pendapat berbeda) secara resmi dalam notulensi rapat.", score: 3},
+                    {text: "Tidak mau terlibat dalam pelaksanaan keputusan tersebut.", score: 2},
+                    {text: "Mencoba meyakinkan atasan secara pribadi untuk membatalkan keputusan.", score: 1},
+                ], 
+                answer: "Tetap menghormati keputusan bersama dan melaksanakannya dengan penuh tanggung jawab sebagai bagian dari komitmen tim.", 
+                pembahasan: "Menunjukkan komitmen, integritas, dan profesionalisme. Meskipun berbeda pendapat, keputusan bersama harus tetap dijalankan dengan tanggung jawab (Skor 5)." 
+            },
+            { category: 'TKP', question: "Instansi Anda menerapkan kebijakan 'paperless' (tanpa kertas) untuk semua urusan administrasi. Namun, banyak pegawai senior yang kesulitan beradaptasi. Anda akan...", 
+                options: [
+                    {text: "Mengambil inisiatif untuk membuat panduan sederhana atau mengadakan sesi pelatihan informal bagi rekan-rekan senior yang kesulitan.", score: 5},
+                    {text: "Fokus pada pekerjaan saya sendiri dan beradaptasi dengan cepat.", score: 4},
+                    {text: "Menyarankan kepada atasan untuk membuat pelatihan khusus bagi pegawai senior.", score: 3},
+                    {text: "Membantu mereka jika diminta secara langsung.", score: 2},
+                    {text: "Menganggap itu adalah masalah mereka sendiri untuk beradaptasi.", score: 1},
+                ], 
+                answer: "Mengambil inisiatif untuk membuat panduan sederhana atau mengadakan sesi pelatihan informal bagi rekan-rekan senior yang kesulitan.", 
+                pembahasan: "Menunjukkan inisiatif, kepedulian, kemampuan berkolaborasi, dan penguasaan TIK untuk membantu kemajuan organisasi (Skor 5)." 
+            },
+            { category: 'TKP', question: "Apa yang akan Anda lakukan jika melihat ada ketidaksesuaian antara profil Anda di media sosial dengan citra yang seharusnya ditampilkan sebagai seorang ASN?", 
+                options: [
+                    {text: "Segera meninjau ulang dan menghapus unggahan atau informasi yang tidak pantas, serta mengatur ulang privasi akun.", score: 5},
+                    {text: "Membuat akun media sosial baru yang khusus untuk pekerjaan.", score: 4},
+                    {text: "Tidak melakukan apa-apa karena media sosial adalah ranah pribadi.", score: 3},
+                    {text: "Menonaktifkan akun media sosial saya untuk sementara.", score: 2},
+                    {text: "Bertanya kepada teman apakah profil saya pantas atau tidak.", score: 1},
+                ], 
+                answer: "Segera meninjau ulang dan menghapus unggahan atau informasi yang tidak pantas, serta mengatur ulang privasi akun.", 
+                pembahasan: "Menunjukkan kesadaran diri, integritas, dan pemahaman bahwa perilaku ASN di dunia maya pun dapat mempengaruhi citra institusi (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda merasa atasan lebih menyukai rekan kerja Anda yang lain dan sering memberikan tugas-tugas penting kepadanya, padahal Anda merasa lebih mampu. Anda akan...", 
+                options: [
+                    {text: "Fokus untuk terus meningkatkan kinerja dan menunjukkan hasil yang luar biasa secara konsisten, serta proaktif meminta tugas yang menantang.", score: 5},
+                    {text: "Menanyakan kepada atasan secara baik-baik apa yang perlu saya tingkatkan agar bisa dipercaya seperti rekan saya.", score: 4},
+                    {text: "Merasa iri dan mencoba mencari kesalahan rekan kerja tersebut.", score: 3},
+                    {text: "Bekerja biasa-biasa saja karena merasa tidak akan dihargai.", score: 2},
+                    {text: "Mengeluh tentang ketidakadilan ini kepada rekan kerja yang lain.", score: 1},
+                ], 
+                answer: "Fokus untuk terus meningkatkan kinerja dan menunjukkan hasil yang luar biasa secara konsisten, serta proaktif meminta tugas yang menantang.", 
+                pembahasan: "Menunjukkan sikap profesional, berorientasi pada hasil, dan proaktif. Kinerja adalah cara terbaik untuk membuktikan kemampuan (Skor 5)." 
+            },
+            { category: 'TKP', question: "Saat jam pulang kantor, Anda melihat lampu dan AC di ruangan yang sudah kosong masih menyala. Sikap Anda adalah...", 
+                options: [
+                    {text: "Mematikan semua lampu dan AC tersebut sebelum pulang sebagai bentuk kepedulian terhadap penghematan energi.", score: 5},
+                    {text: "Memberitahu petugas kebersihan atau keamanan untuk mematikannya.", score: 4},
+                    {text: "Mengirim pesan di grup kantor untuk mengingatkan agar yang piket mematikannya.", score: 3},
+                    {text: "Membiarkannya saja karena itu bukan tanggung jawab saya.", score: 2},
+                    {text: "Berpikir bahwa mungkin masih ada orang yang akan kembali ke ruangan tersebut.", score: 1},
+                ], 
+                answer: "Mematikan semua lampu dan AC tersebut sebelum pulang sebagai bentuk kepedulian terhadap penghematan energi.", 
+                pembahasan: "Menunjukkan inisiatif, tanggung jawab, dan kepedulian terhadap efisiensi dan aset negara tanpa menunggu atau melempar tanggung jawab (Skor 5)." 
+            },
+            { category: 'TKP', question: "Anda menerima keluhan dari masyarakat mengenai layanan yang lambat. Setelah ditelusuri, kelambatan terjadi karena prosedur yang berbelit-belit. Anda akan...", 
+                options: [
+                    {text: "Menganalisis prosedur tersebut dan mengusulkan penyederhanaan alur kerja kepada pimpinan untuk meningkatkan efisiensi layanan.", score: 5},
+                    {text: "Meminta maaf kepada masyarakat dan menjelaskan bahwa Anda hanya menjalankan prosedur yang ada.", score: 4},
+                    {text: "Mencari jalan pintas dalam prosedur untuk membantu warga tersebut secara kasuistis.", score: 3},
+                    {text: "Menyalahkan sistem dan prosedur yang ada saat berbicara dengan warga.", score: 2},
+                    {text: "Mengabaikan keluhan karena prosedur memang sudah seperti itu dari dulu.", score: 1},
+                ], 
+                answer: "Menganalisis prosedur tersebut dan mengusulkan penyederhanaan alur kerja kepada pimpinan untuk meningkatkan efisiensi layanan.", 
+                pembahasan: "Menunjukkan orientasi pada pelayanan, kemampuan berpikir kritis, dan proaktif dalam mencari solusi sistemik untuk perbaikan jangka panjang, bukan hanya solusi sementara (Skor 5)." 
+            }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const timerEl = document.getElementById('timer');
+        const totalSoalEl = document.getElementById('total-soal');
+        const dijawabCountEl = document.getElementById('dijawab-count');
+        const belumDijawabCountEl = document.getElementById('belum-dijawab-count');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        const questionHeaderEl = document.getElementById('question-header');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const navGrid = document.getElementById('nav-grid');
+        const finishBtn = document.getElementById('finish-btn');
+        const restartBtnTop = document.getElementById('restart-btn-top');
+        // Score Modal Elements
+        const scoreModal = document.getElementById('score-modal');
+        const totalScoreText = document.getElementById('total-score-text');
+        const overallStatus = document.getElementById('overall-status');
+        const twkScoreEl = document.getElementById('twk-score');
+        const tiuScoreEl = document.getElementById('tiu-score');
+        const tkpScoreEl = document.getElementById('tkp-score');
+        const twkStatusEl = document.getElementById('twk-status');
+        const tiuStatusEl = document.getElementById('tiu-status');
+        const tkpStatusEl = document.getElementById('tkp-status');
+        const restartBtnModal = document.getElementById('restart-btn-modal');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // --- APP STATE ---
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let timerInterval;
+        let timeLeft = 100 * 60; // 100 menit
+
+        // --- FUNCTIONS ---
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers.fill(null);
+            timeLeft = 100 * 60;
+            scoreModal.classList.add('hidden');
+            document.querySelector('.container').classList.remove('hidden');
+            
+            totalSoalEl.textContent = quizData.length;
+            
+            populateNavGrid();
+            loadQuestion(currentQuestionIndex);
+            startTimer();
+            updateUI();
+        }
+
+        function populateNavGrid() {
+            navGrid.innerHTML = '';
+            quizData.forEach((_, index) => {
+                const button = document.createElement('button');
+                button.textContent = index + 1;
+                button.classList.add('nav-grid-btn', 'p-1', 'text-xs', 'rounded-md', 'font-semibold');
+                button.addEventListener('click', () => jumpToQuestion(index));
+                navGrid.appendChild(button);
+            });
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const question = quizData[index];
+            questionHeaderEl.textContent = `Soal No. ${index + 1} (${question.category})`;
+            questionTextEl.textContent = question.question;
+
+            optionsContainer.innerHTML = '';
+            const optionLetters = ['A', 'B', 'C', 'D', 'E'];
+            const optionsData = question.category === 'TKP' ? question.options.map(opt => opt.text) : question.options;
+
+            optionsData.forEach((option, i) => {
+                const isSelected = userAnswers[index] === option;
+                const div = document.createElement('div');
+                div.className = `option-label p-3 rounded-lg cursor-pointer flex items-center space-x-4 ${isSelected ? 'selected' : ''}`;
+                div.innerHTML = `
+                    <div class="border-2 border-gray-400 rounded-md w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold text-gray-600">${optionLetters[i]}</div>
+                    <div class="text-gray-700">${option}</div>
+                `;
+                div.addEventListener('click', () => selectAnswer(option));
+                optionsContainer.appendChild(div);
+            });
+            updateUI();
+        }
+        
+        function selectAnswer(selectedOption) {
+            userAnswers[currentQuestionIndex] = selectedOption;
+            loadQuestion(currentQuestionIndex); 
+        }
+
+        function jumpToQuestion(index) {
+            loadQuestion(index);
+        }
+
+        function handleNextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                // If on the last question, clicking next should finish the quiz
+                finishQuiz();
+            }
+        }
+
+        function updateUI() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            dijawabCountEl.textContent = answeredCount;
+            belumDijawabCountEl.textContent = quizData.length - answeredCount;
+
+            const progress = (answeredCount / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressPercent.textContent = `${Math.round(progress)}%`;
+
+            const gridButtons = navGrid.children;
+            for (let i = 0; i < gridButtons.length; i++) {
+                gridButtons[i].classList.remove('answered', 'unanswered', 'current');
+                if (i === currentQuestionIndex) {
+                    gridButtons[i].classList.add('current');
+                } else if (userAnswers[i] !== null) {
+                    gridButtons[i].classList.add('answered');
+                } else {
+                     gridButtons[i].classList.add('unanswered');
+                }
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuiz();
+                    return;
+                }
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            let twkScore = 0;
+            let tiuScore = 0;
+            let tkpScore = 0;
+
+            const passingGrade = {
+                twk: 65,
+                tiu: 80,
+                tkp: 166
+            };
+
+            quizData.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                if (userAnswer) {
+                    if (q.category === 'TWK' || q.category === 'TIU') {
+                        if (userAnswer === q.answer) {
+                            if (q.category === 'TWK') twkScore += 5;
+                            else tiuScore += 5;
+                        }
+                    } else if (q.category === 'TKP') {
+                        const selectedOption = q.options.find(opt => opt.text === userAnswer);
+                        if (selectedOption) {
+                            tkpScore += selectedOption.score;
+                        }
+                    }
+                }
+            });
+
+            const totalScore = twkScore + tiuScore + tkpScore;
+            
+            const isTwkPass = twkScore >= passingGrade.twk;
+            const isTiuPass = tiuScore >= passingGrade.tiu;
+            const isTkpPass = tkpScore >= passingGrade.tkp;
+            const isOverallPass = isTwkPass && isTiuPass && isTkpPass;
+
+            // Update score modal
+            totalScoreText.textContent = totalScore;
+            twkScoreEl.textContent = twkScore;
+            tiuScoreEl.textContent = tiuScore;
+            tkpScoreEl.textContent = tkpScore;
+
+            twkStatusEl.textContent = isTwkPass ? 'LULUS' : 'TIDAK LULUS';
+            twkStatusEl.className = isTwkPass ? 'text-sm font-semibold text-green-600' : 'text-sm font-semibold text-red-600';
+            tiuStatusEl.textContent = isTiuPass ? 'LULUS' : 'TIDAK LULUS';
+            tiuStatusEl.className = isTiuPass ? 'text-sm font-semibold text-green-600' : 'text-sm font-semibold text-red-600';
+            tkpStatusEl.textContent = isTkpPass ? 'LULUS' : 'TIDAK LULUS';
+            tkpStatusEl.className = isTkpPass ? 'text-sm font-semibold text-green-600' : 'text-sm font-semibold text-red-600';
+
+            overallStatus.textContent = isOverallPass ? 'SELAMAT, ANDA LULUS!' : 'MAAF, ANDA TIDAK LULUS';
+            overallStatus.className = isOverallPass ? 'text-lg font-bold text-green-600' : 'text-lg font-bold text-red-600';
+
+            document.querySelector('.container').classList.add('hidden');
+            scoreModal.classList.remove('hidden');
+        }
+
+        function generatePDF() {
+            const doc = new jsPDF();
+            doc.setFontSize(18);
+            doc.text("Hasil dan Pembahasan Simulasi Tes CPNS (Set 2)", 14, 22);
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+
+            // Add summary table
+            const summaryBody = [
+                ['Kategori', 'Skor', 'Ambang Batas', 'Status'],
+                ['TWK', twkScoreEl.textContent, '65', twkStatusEl.textContent],
+                ['TIU', tiuScoreEl.textContent, '80', tiuStatusEl.textContent],
+                ['TKP', tkpScoreEl.textContent, '166', tkpStatusEl.textContent],
+                [{ content: 'Total Skor', styles: { fontStyle: 'bold' } }, { content: totalScoreText.textContent, styles: { fontStyle: 'bold' } }, '', { content: overallStatus.textContent, styles: { fontStyle: 'bold' } }]
+            ];
+
+            doc.autoTable({
+                startY: 30,
+                head: [['Ringkasan Hasil Ujian']],
+                body: summaryBody,
+                theme: 'grid'
+            });
+
+            let finalY = doc.autoTable.previous.finalY; 
+
+            quizData.forEach((q, index) => {
+                const questionText = `${index + 1}. ${q.question}`;
+                
+                const optionsList = q.category === 'TKP' ? q.options.map(opt => opt.text) : q.options;
+                const optionsText = optionsList.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n');
+                
+                const userAnswer = userAnswers[index] || "Tidak Dijawab";
+                const correctAnswer = q.answer;
+                
+                // Find the letter for the correct answer
+                const correctIndex = optionsList.indexOf(correctAnswer);
+                const correctLetter = correctIndex !== -1 ? String.fromCharCode(65 + correctIndex) : '?';
+                const correctAnswerDisplay = `${correctLetter}. ${correctAnswer}`;
+
+                const pembahasanText = `Pembahasan: ${q.pembahasan}`;
+
+                let status = "Tidak Dijawab";
+                
+                if(userAnswers[index] !== null) {
+                    if(q.category === 'TKP') {
+                        const selectedOption = q.options.find(opt => opt.text === userAnswers[index]);
+                        if (selectedOption) {
+                            status = `Skor ${selectedOption.score}`;
+                        }
+                    } else {
+                        status = (userAnswers[index] === correctAnswer) ? "Benar (+5)" : "Salah (0)";
+                    }
+                }
+
+                const content = [
+                    [{ content: questionText, styles: { fontStyle: 'bold' } }],
+                    [{ content: optionsText }],
+                    [{ content: `Jawaban Anda: ${userAnswer} (${status})` }],
+                    [{ content: `Kunci Jawaban: ${correctAnswerDisplay}`, styles: { fontStyle: 'bold', textColor: [0, 128, 0] } }],
+                    [{ content: pembahasanText, styles: { fillColor: [240, 240, 240] } }]
+                ];
+                
+                // Check if new page is needed before drawing table
+                const tableHeight = (content.length * 10) + 10; // Approximate height
+                if (finalY + tableHeight > doc.internal.pageSize.height - 20) { // 20 for margin
+                    doc.addPage();
+                    finalY = 20; // Reset Y position on new page
+                }
+
+                doc.autoTable({
+                    startY: finalY + 5,
+                    body: content,
+                    theme: 'grid',
+                    styles: { fontSize: 9, cellPadding: 2, lineColor: [200, 200, 200], lineWidth: 0.1 },
+                    didDrawPage: data => finalY = data.cursor.y
+                });
+                
+                finalY = doc.autoTable.previous.finalY;
+            });
+
+            doc.save('Pembahasan-Tes-CPNS-Set2.pdf');
+        }
+
+
+        // --- EVENT LISTENERS ---
+        nextBtn.addEventListener('click', handleNextQuestion);
+        skipBtn.addEventListener('click', handleNextQuestion);
+        finishBtn.addEventListener('click', finishQuiz);
+        restartBtnTop.addEventListener('click', startQuiz);
+        restartBtnModal.addEventListener('click', () => {
+             document.querySelector('.container').classList.remove('hidden');
+             startQuiz();
+        });
+        downloadBtn.addEventListener('click', generatePDF);
+
+        // --- INITIALIZATION ---
+        startQuiz();
+    });
+    </script>
+</body>
+</html>
